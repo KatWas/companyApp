@@ -1,21 +1,41 @@
-const expect = require('chai').expect;
-const Department = require('../department.model.js');
 const mongoose = require('mongoose');
+const Department = require('../department.model');
+const expect = require('chai').expect;
 
-
-const departmentSchema = new mongoose.Schema({
-  name: { type: String, required: true }
-});
 describe('Department', () => {
-
     it('should throw an error if no "name" arg', () => {
-        const dep = new Department({}); // create new Department, but don't set `name` attr value
-      
-        dep.validate(err => {
-          expect(err.errors.name).to.exist;
+        const testDepartment = new Department({}); // create new Department, but don't set `name` attr value
+        testDepartment.validate(err => {
+            expect(err.errors.name).to.exist;
         });
-      
-      });
+    });
+    it('should throw an error if "name" is not a string', () => {
+        const cases = [{}, []];
+        for (let name of cases) {
+            const testDepartment= new Department({ name });
+            testDepartment.validate(err => {
+                expect(err.errors.name).to.exist;
+            })
+        }
     });
 
-module.exports = mongoose.model('Department', departmentSchema);
+    it('should throw an error if "name" hass less than 5 or longer than 20 characters', () => {
+        const cases = ['q', 'qw', 'qwer', 'qwsaqwsderfdewsaqwsde'];
+        for (let name of cases) {
+            const testDepartment= new Department({ name });
+            testDepartment.validate(err => {
+                expect(err.errors.name).to.exist;
+            })
+        }
+    });
+
+    it('should not throw an error if "name" is correct', () => {
+        const cases = ['qwert', 'qwertyu', 'xswedcvfrt', 'qwzxcvbnm sdfghjklqw'];
+        for (let name of cases) {
+            const testDepartment= new Department({ name });
+            testDepartment.validate(err => {
+                expect(err).to.not.exist;
+            })
+        }
+    })
+})
